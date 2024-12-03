@@ -26,6 +26,17 @@ void AAPNTPlayerController::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	DefaultCameraLocation = GetPawn()->GetActorLocation();
+	DefaultCameraRotation = GetPawn()->GetActorRotation();
+
+	if (AAPNTPlayerController* PC = Cast<AAPNTPlayerController>(GetOwner()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(PlayerInputMapping, 0);
+		}
+	}
 }
 
 void AAPNTPlayerController::SetupInputComponent()
@@ -53,6 +64,10 @@ void AAPNTPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Triggered, this, &AAPNTPlayerController::OnTouchTriggered);
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Completed, this, &AAPNTPlayerController::OnTouchReleased);
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Canceled, this, &AAPNTPlayerController::OnTouchReleased);
+
+		// Camera Controller
+		EnhancedInputComponent->BindAction(IA_CameraControl, ETriggerEvent::Started, this, &AAPNTPlayerController::StartCameraControl);
+		EnhancedInputComponent->BindAction(IA_CameraControl, ETriggerEvent::Completed, this, &AAPNTPlayerController::StopCameraControl);
 	}
 	else
 	{
@@ -122,4 +137,20 @@ void AAPNTPlayerController::OnTouchReleased()
 {
 	bIsTouch = false;
 	OnSetDestinationReleased();
+}
+
+void AAPNTPlayerController::StartCameraControl()
+{
+	UE_LOG(LogTemp, Warning, TEXT("### StartCameraControl"));
+	bIsCameraControlled = true;
+	SetViewTargetWithBlend(GetPawn(), 0.5f);
+}
+
+void AAPNTPlayerController::StopCameraControl()
+{
+	UE_LOG(LogTemp, Warning, TEXT("### StopCameraControl"));
+	bIsCameraControlled = false;
+
+	GetPawn()->SetActorLocation(DefaultCameraLocation);
+	GetPawn()->SetActorRotation(DefaultCameraRotation);
 }

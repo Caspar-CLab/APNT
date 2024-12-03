@@ -16,5 +16,9 @@ class APNT_API AAIBotController : public AAIController
 	
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
+private:
+	float FollowDistanceMin = 200.0f;
+	float FollowDistanceMax = 500.0f;
 };

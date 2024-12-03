@@ -42,6 +42,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* SetDestinationTouchAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* IA_CameraControl;
+
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
 	uint32 bMoveToMouseCursor : 1;
@@ -59,10 +62,25 @@ protected:
 	void OnTouchReleased();
 
 private:
+	void StartCameraControl();
+	void StopCameraControl();
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputMappingContext* PlayerInputMapping;
+
+	FVector DefaultCameraLocation;
+	FRotator DefaultCameraRotation;
+	bool bIsCameraControlled = false;
+	
 	FVector CachedDestination;
+
+
+
 
 	bool bIsTouch; // Is it a touch device
 	float FollowTime; // For how long it has been pressed
+
+	
 };
 
 
