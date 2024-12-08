@@ -31,10 +31,10 @@ void AAIBotController::Tick(float DeltaTime)
 	if (DistanceToPlayer > FollowDistanceMax)
 	{
 		MoveToLocation(PlayerLocation);
-		UE_LOG(LogTemp, Warning, TEXT("AI Moving to Player: %s"), *PlayerLocation.ToString());
+		// UE_LOG(LogTemp, Warning, TEXT("AI Moving to Player: %s"), *PlayerLocation.ToString());
 	}
 	else if (DistanceToPlayer < FollowDistanceMin) {
 		StopMovement();
-		UE_LOG(LogTemp, Warning, TEXT("AI Stopping"));
+		// UE_LOG(LogTemp, Warning, TEXT("AI Stopping"));
 	}
 }

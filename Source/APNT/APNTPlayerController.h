@@ -5,6 +5,10 @@
 #include "CoreMinimal.h"
 #include "Templates/SubclassOf.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
+#include "InputActionValue.h"
+
 #include "APNTPlayerController.generated.h"
 
 /** Forward declaration to improve compiling times */
@@ -45,6 +49,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_CameraControl;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input)
+	UInputAction* IA_MouseLook;
+
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
 	uint32 bMoveToMouseCursor : 1;
@@ -64,6 +71,7 @@ protected:
 private:
 	void StartCameraControl();
 	void StopCameraControl();
+	void RotateCamera(const FInputActionValue& InputValue);
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputMappingContext* PlayerInputMapping;
@@ -74,12 +82,9 @@ private:
 	
 	FVector CachedDestination;
 
-
-
-
 	bool bIsTouch; // Is it a touch device
 	float FollowTime; // For how long it has been pressed
-
+	float CameraRotationSpeed = 1.4f;
 	
 };
 

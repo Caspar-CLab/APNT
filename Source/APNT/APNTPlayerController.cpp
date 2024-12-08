@@ -8,9 +8,9 @@
 #include "APNTCharacter.h"
 #include "Engine/World.h"
 #include "EnhancedInputComponent.h"
-#include "InputActionValue.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -29,14 +29,6 @@ void AAPNTPlayerController::BeginPlay()
 
 	DefaultCameraLocation = GetPawn()->GetActorLocation();
 	DefaultCameraRotation = GetPawn()->GetActorRotation();
-
-	if (AAPNTPlayerController* PC = Cast<AAPNTPlayerController>(GetOwner()))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(PlayerInputMapping, 0);
-		}
-	}
 }
 
 void AAPNTPlayerController::SetupInputComponent()
@@ -47,7 +39,9 @@ void AAPNTPlayerController::SetupInputComponent()
 	// Add Input Mapping Context
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("### SetupInputcomponent()"));
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		Subsystem->AddMappingContext(PlayerInputMapping, 0);
 	}
 
 	// Set up action bindings
@@ -68,7 +62,8 @@ void AAPNTPlayerController::SetupInputComponent()
 		// Camera Controller
 		EnhancedInputComponent->BindAction(IA_CameraControl, ETriggerEvent::Started, this, &AAPNTPlayerController::StartCameraControl);
 		EnhancedInputComponent->BindAction(IA_CameraControl, ETriggerEvent::Completed, this, &AAPNTPlayerController::StopCameraControl);
-	}
+		EnhancedInputComponent->BindAction(IA_MouseLook, ETriggerEvent::Triggered, this, &AAPNTPlayerController::RotateCamera);
+}
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
@@ -141,16 +136,37 @@ void AAPNTPlayerController::OnTouchReleased()
 
 void AAPNTPlayerController::StartCameraControl()
 {
+	AActor* ControlledPawn = GetPawn();
+	UCameraComponent* CameraComponent = ControlledPawn->FindComponentByClass<UCameraComponent>();
+	FRotator CameraRotation = CameraComponent->GetComponentRotation();
+	UE_LOG(LogTemp, Warning, TEXT("### Start Camera Rotation: %s"), *CameraRotation.ToString());
 	UE_LOG(LogTemp, Warning, TEXT("### StartCameraControl"));
 	bIsCameraControlled = true;
-	SetViewTargetWithBlend(GetPawn(), 0.5f);
 }
 
 void AAPNTPlayerController::StopCameraControl()
 {
 	UE_LOG(LogTemp, Warning, TEXT("### StopCameraControl"));
 	bIsCameraControlled = false;
+}
 
-	GetPawn()->SetActorLocation(DefaultCameraLocation);
-	GetPawn()->SetActorRotation(DefaultCameraRotation);
+void AAPNTPlayerController::RotateCamera(const FInputActionValue& InputValue)
+{
+	AActor* ControlledPawn = GetPawn();
+	if (!bIsCameraControlled || !ControlledPawn)
+		return;
+
+	FVector2D InputAxis = InputValue.Get<FVector2D>();
+	USpringArmComponent* SpringArm = ControlledPawn->FindComponentByClass<USpringArmComponent>();
+	UCameraComponent* CameraComponent = ControlledPawn->FindComponentByClass<UCameraComponent>();
+
+	if (SpringArm)
+	{
+		FRotator NewRotation = SpringArm->GetComponentRotation();
+		NewRotation.Yaw += InputAxis.X * CameraRotationSpeed;
+		NewRotation.Pitch = FMath::Clamp(NewRotation.Pitch - InputAxis.Y * CameraRotationSpeed, -80.0f, 80.0f);
+
+		SpringArm->SetWorldRotation(NewRotation);
+		UE_LOG(LogTemp, Warning, TEXT("SpringArm Rotation: %s"), *NewRotation.ToString());
+	}
 }
