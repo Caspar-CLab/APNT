@@ -63,7 +63,10 @@ void AAPNTPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(IA_CameraControl, ETriggerEvent::Started, this, &AAPNTPlayerController::StartCameraControl);
 		EnhancedInputComponent->BindAction(IA_CameraControl, ETriggerEvent::Completed, this, &AAPNTPlayerController::StopCameraControl);
 		EnhancedInputComponent->BindAction(IA_MouseLook, ETriggerEvent::Triggered, this, &AAPNTPlayerController::RotateCamera);
-}
+		
+		// Moving Controller
+		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &AAPNTPlayerController::Move);
+	}
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
@@ -168,5 +171,21 @@ void AAPNTPlayerController::RotateCamera(const FInputActionValue& InputValue)
 
 		SpringArm->SetWorldRotation(NewRotation);
 		UE_LOG(LogTemp, Warning, TEXT("SpringArm Rotation: %s"), *NewRotation.ToString());
+	}
+}
+
+void AAPNTPlayerController::Move(const FInputActionValue& InputValue)
+{
+	UE_LOG(LogTemp, Warning, TEXT("### Move"));
+	FVector2D MovementVector = InputValue.Get<FVector2D>();
+	APawn* ControlledPawn = GetPawn();
+
+	if (ControlledPawn)
+	{
+		FVector Forward = ControlledPawn->GetActorForwardVector() * MovementVector.Y;
+		FVector Right = ControlledPawn->GetActorRightVector() * MovementVector.X;
+
+        FVector Movement = (Forward + Right).GetClampedToMaxSize(1.0f);
+        ControlledPawn->AddMovementInput(Movement);
 	}
 }

@@ -46,11 +46,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* SetDestinationTouchAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_CameraControl;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Input)
 	UInputAction* IA_MouseLook;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Input)
+	UInputAction* IA_Move;
 
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
@@ -72,6 +75,7 @@ private:
 	void StartCameraControl();
 	void StopCameraControl();
 	void RotateCamera(const FInputActionValue& InputValue);
+	void Move(const FInputActionValue& InputValue);
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputMappingContext* PlayerInputMapping;
