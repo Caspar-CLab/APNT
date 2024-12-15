@@ -53,7 +53,7 @@ public:
 	UInputAction* IA_MouseLook;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Input)
-	UInputAction* IA_Move;
+	UInputAction* SetKeyboardMoveAction;
 
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
@@ -75,8 +75,11 @@ private:
 	void StartCameraControl();
 	void StopCameraControl();
 	void RotateCamera(const FInputActionValue& InputValue);
-	void Move(const FInputActionValue& InputValue);
+	
+	void InputMove(const FInputActionValue& InputValue);
 
+	
+	
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputMappingContext* PlayerInputMapping;
 

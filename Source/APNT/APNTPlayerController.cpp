@@ -65,7 +65,7 @@ void AAPNTPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(IA_MouseLook, ETriggerEvent::Triggered, this, &AAPNTPlayerController::RotateCamera);
 		
 		// Moving Controller
-		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &AAPNTPlayerController::Move);
+		EnhancedInputComponent->BindAction(SetKeyboardMoveAction, ETriggerEvent::Triggered, this, &AAPNTPlayerController::InputMove);
 	}
 	else
 	{
@@ -174,18 +174,21 @@ void AAPNTPlayerController::RotateCamera(const FInputActionValue& InputValue)
 	}
 }
 
-void AAPNTPlayerController::Move(const FInputActionValue& InputValue)
+void AAPNTPlayerController::InputMove(const FInputActionValue& InputActionValue)
 {
 	UE_LOG(LogTemp, Warning, TEXT("### Move"));
-	FVector2D MovementVector = InputValue.Get<FVector2D>();
-	APawn* ControlledPawn = GetPawn();
 
-	if (ControlledPawn)
+	const FVector2D MovementValue = InputActionValue.Get<FVector2D>();
+	const FRotator MovementRotation(0.0f, GetControlRotation().Yaw, 0.0f);
+
+	if (MovementValue.X != 0.0f)
 	{
-		FVector Forward = ControlledPawn->GetActorForwardVector() * MovementVector.Y;
-		FVector Right = ControlledPawn->GetActorRightVector() * MovementVector.X;
-
-        FVector Movement = (Forward + Right).GetClampedToMaxSize(1.0f);
-        ControlledPawn->AddMovementInput(Movement);
+		const FVector MovementDirection = MovementRotation.RotateVector(FVector::RightVector);
+		GetPawn()->AddMovementInput(MovementDirection, MovementValue.X);
+	}
+	if (MovementValue.Y != 0.0f)
+	{
+		const FVector MovementDirection = MovementRotation.RotateVector(FVector::ForwardVector);
+		GetPawn()->AddMovementInput(MovementDirection, MovementValue.Y);
 	}
 }
