@@ -176,19 +176,28 @@ void AAPNTPlayerController::RotateCamera(const FInputActionValue& InputValue)
 
 void AAPNTPlayerController::InputMove(const FInputActionValue& InputActionValue)
 {
-	UE_LOG(LogTemp, Warning, TEXT("### Move"));
-
-	const FVector2D MovementValue = InputActionValue.Get<FVector2D>();
+	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
 	const FRotator MovementRotation(0.0f, GetControlRotation().Yaw, 0.0f);
 
-	if (MovementValue.X != 0.0f)
-	{
-		const FVector MovementDirection = MovementRotation.RotateVector(FVector::RightVector);
-		GetPawn()->AddMovementInput(MovementDirection, MovementValue.X);
+	UCameraComponent* CameraComponent = GetPawn()->FindComponentByClass<UCameraComponent>();
+
+	FVector CameraForward = CameraComponent->GetForwardVector();
+	FVector CameraRight = CameraComponent->GetRightVector();
+
+	FVector NewMoveDirection = (CameraForward * MovementVector.Y + CameraRight * MovementVector.X);
+
+	//UE_LOG(LogTemp, Warning, TEXT("### Move"));
+	if (MovementVector.X != 0.0f)
+	{		
+		// Get Unit Vector (not used)
+		//const FVector MovementDirection = (CameraForward * MovementVector.Y + CameraRight * MovementVector.X).GetSafeNormal();
+
+		const FVector MovementDirection = (MovementVector.X > 0.0f) ? CameraRight : -CameraRight;
+		GetPawn()->AddMovementInput(MovementDirection, FMath::Abs(MovementVector.X));
 	}
-	if (MovementValue.Y != 0.0f)
+	if (MovementVector.Y != 0.0f)
 	{
-		const FVector MovementDirection = MovementRotation.RotateVector(FVector::ForwardVector);
-		GetPawn()->AddMovementInput(MovementDirection, MovementValue.Y);
+		const FVector MovementDirection = MovementVector.Y > 0.0f ? CameraForward : -CameraForward;
+		GetPawn()->AddMovementInput(MovementDirection, FMath::Abs(MovementVector.Y));
 	}
 }
